@@ -1,104 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resume + Support Agent</title>
-    <link rel="stylesheet" href="/static/style.css">
+  <meta charset="utf-8">
+  <title>Intern Live Build</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <header>
-        <h1>My Resume</h1>
-        <p>Resume API + Grounded Support Agent</p>
-    </header>
 
-    <main>
-        <section id="resume">
-            <h2>Resume</h2>
-            <div id="resume-content">Loading...</div>
-        </section>
+  <section id="resume-section">
+    <h1>Resume</h1>
+    <div id="resume-app">Loading...</div>
+  </section>
 
-        <section id="chat">
-            <h2>Home Services Support</h2>
-            <div id="messages"></div>
+  <hr>
 
-            <form id="chat-form">
-                <input id="message-input" placeholder="Ask about services or prices..." autocomplete="off">
-                <button type="submit">Send</button>
-            </form>
-        </section>
-    </main>
+  <section id="chat-section">
+    <h1>HomeEase Support</h1>
+    <div id="log"></div>
+    <form id="chat-form">
+      <input id="chat-input" placeholder="Ask about services, prices, areas..." autocomplete="off" />
+      <button>Send</button>
+    </form>
+  </section>
 
-    <script>
-        let conversation = [];
-
-        async function loadResume() {
-            const response = await fetch("/api/resume");
-            const resume = await response.json();
-
-            document.getElementById("resume-content").innerHTML = `
-                <h3>${resume.profile.name}</h3>
-                <p><strong>${resume.profile.title}</strong></p>
-                <p>${resume.profile.summary}</p>
-
-                <h3>Experience</h3>
-                ${resume.experience.map(job => `
-                    <div class="job">
-                        <strong>${job.role} — ${job.company}</strong>
-                        <p>${job.duration}</p>
-                        <ul>${job.highlights.map(item => `<li>${item}</li>`).join("")}</ul>
-                    </div>
-                `).join("")}
-
-                <h3>Skills</h3>
-                <p>${resume.skills.join(" • ")}</p>
-            `;
-        }
-
-        function addMessage(role, text) {
-            const div = document.createElement("div");
-            div.className = "message " + role;
-            div.textContent = text;
-            document.getElementById("messages").appendChild(div);
-            div.scrollIntoView({behavior: "smooth"});
-        }
-
-        document.getElementById("chat-form").addEventListener("submit", async (event) => {
-            event.preventDefault();
-
-            const input = document.getElementById("message-input");
-            const text = input.value.trim();
-            if (!text) return;
-
-            addMessage("user", text);
-            conversation.push({role: "user", content: text});
-            input.value = "";
-
-            addMessage("assistant", "Thinking...");
-
-            try {
-                const response = await fetch("/api/chat", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({messages: conversation})
-                });
-
-                const data = await response.json();
-                const thinking = document.querySelector("#messages .assistant:last-child");
-
-                if (data.answer) {
-                    thinking.textContent = data.answer;
-                    conversation.push({role: "assistant", content: data.answer});
-                } else {
-                    thinking.textContent = data.error || "Something went wrong.";
-                }
-            } catch (error) {
-                const thinking = document.querySelector("#messages .assistant:last-child");
-                thinking.textContent = "Could not connect to the server.";
-            }
-        });
-
-        loadResume();
-    </script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
