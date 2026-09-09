@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, render_template, request
 import os
-from openai import OpenAI
+from groq import Groq
 
 app = Flask(__name__)
 
@@ -95,13 +95,13 @@ def chat():
     if not messages:
         return jsonify({"error": "No messages provided"}), 400
 
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         return jsonify({
-            "answer": "LLM API key is not configured. Set OPENAI_API_KEY and restart the app."
+            "answer": "LLM API key is not configured. Set GROQ_API_KEY and restart the app."
         }), 500
 
-    client = OpenAI(api_key=api_key)
+    client = Groq(api_key=api_key)
 
     safe_messages = []
     for message in messages[-10:]:
@@ -112,7 +112,7 @@ def chat():
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+                       model="openai/gpt-oss-20b",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 *safe_messages
